@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 interface LoginDto {
   email: string;
   password: string;
+  portal?: 'admin' | 'developer';
 }
 
 @Controller('auth')
@@ -12,7 +13,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: LoginDto) {
-    const user = await this.authService.validateUser(body.email, body.password);
+    const user = await this.authService.validateUser(body.email, body.password, body.portal);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

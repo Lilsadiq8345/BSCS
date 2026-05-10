@@ -41,3 +41,7 @@ backend/node_modules/
 # Frontend specific
 frontend/.next/
 frontend/node_modules/
+
+# Data
+backend/projects/
+frontend/package-lock.json

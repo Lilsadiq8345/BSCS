@@ -31,9 +31,9 @@ export default function AdminOverview() {
 
   const cards = [
     { name: 'Active Containers', value: stats?.activeContainers || 0, icon: Server, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { name: 'System Load', value: '12%', icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
-    { name: 'Memory Usage', value: '1.2 GB', icon: Cpu, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { name: 'Storage', value: '45 GB', icon: HardDrive, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    { name: 'System Load', value: stats?.systemLoad || '0%', icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { name: 'Memory Usage', value: stats?.memoryUsage || '0 GB', icon: Cpu, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Storage', value: stats?.storage || 'Unknown', icon: HardDrive, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
   ];
 
   return (
@@ -63,9 +63,17 @@ export default function AdminOverview() {
       <div className="glass rounded-2xl border border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-900 flex justify-between items-center">
           <h2 className="text-lg font-bold">Active Sandboxes</h2>
-          <div className="flex items-center gap-2 text-xs text-green-500 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-            <ShieldCheck size={14} />
-            <span className="font-bold uppercase tracking-widest">Isolated System</span>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => window.location.href = '/admin/projects'}
+              className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors"
+            >
+              Manage & Inspect Workspaces →
+            </button>
+            <div className="flex items-center gap-2 text-xs text-green-500 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+              <ShieldCheck size={14} />
+              <span className="font-bold uppercase tracking-widest">Isolated System</span>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">

@@ -17,9 +17,15 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<Omit<User, 'password'> | null> {
+  async validateUser(email: string, pass: string, portal?: 'admin' | 'developer'): Promise<Omit<User, 'password'> | null> {
     const user = await this.usersService.findOne(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
+      if (portal === 'admin' && user.role !== 'ADMIN') {
+        throw new UnauthorizedException('Access denied. Admin portal only.');
+      }
+      if (portal === 'developer' && user.role !== 'DEVELOPER') {
+        throw new UnauthorizedException('Access denied. Developer portal only.');
+      }
       const { password: _, ...result } = user;
       return result;
     }

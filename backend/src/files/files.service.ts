@@ -26,13 +26,33 @@ export class FilesService {
 
   async listFiles(projectId: string, relativePath: string = '') {
     const absolutePath = await this.validatePath(projectId, relativePath);
+    
+    const getFiles = async (dir: string, base: string = ''): Promise<any[]> => {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      const files = await Promise.all(
+        entries
+          .filter((entry) => !entry.name.startsWith('.') && entry.name !== 'node_modules')
+          .map(async (entry) => {
+            const res = path.join(dir, entry.name);
+            const rel = path.join(base, entry.name);
+            const item = {
+              name: entry.name,
+              isDirectory: entry.isDirectory(),
+              path: rel,
+            };
+            
+            if (entry.isDirectory()) {
+              const sub = await getFiles(res, rel);
+              return [item, ...sub];
+            }
+            return item;
+          }),
+      );
+      return files.flat();
+    };
+
     try {
-      const entries = await fs.readdir(absolutePath, { withFileTypes: true });
-      return entries.map((entry) => ({
-        name: entry.name,
-        isDirectory: entry.isDirectory(),
-        path: path.join(relativePath, entry.name),
-      }));
+      return await getFiles(absolutePath);
     } catch (err) {
       throw new NotFoundException('Directory not found');
     }
@@ -47,13 +67,38 @@ export class FilesService {
     }
   }
 
-  async writeFile(projectId: string, relativePath: string, content: string) {
+  async writeFile(projectId: string, relativePath: string, content: string = '') {
     const absolutePath = await this.validatePath(projectId, relativePath);
     try {
       await fs.writeFile(absolutePath, content, 'utf-8');
       return { success: true };
     } catch (err) {
       throw new ForbiddenException('Could not write file');
+    }
+  }
+
+  async createDirectory(projectId: string, relativePath: string) {
+    const absolutePath = await this.validatePath(projectId, relativePath);
+    try {
+      await fs.mkdir(absolutePath, { recursive: true });
+      return { success: true };
+    } catch (err) {
+      throw new ForbiddenException('Could not create directory');
+    }
+  }
+
+  async deleteItem(projectId: string, relativePath: string) {
+    const absolutePath = await this.validatePath(projectId, relativePath);
+    try {
+      const stats = await fs.stat(absolutePath);
+      if (stats.isDirectory()) {
+        await fs.rm(absolutePath, { recursive: true, force: true });
+      } else {
+        await fs.unlink(absolutePath);
+      }
+      return { success: true };
+    } catch (err) {
+      throw new ForbiddenException('Could not delete item');
     }
   }
 }

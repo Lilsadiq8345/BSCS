@@ -9,6 +9,7 @@ export class MonitoringController {
   constructor(private monitoringService: MonitoringService) {}
 
   @Get('stats')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   async getStats() {
     return this.monitoringService.getStats();
   }

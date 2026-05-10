@@ -7,9 +7,10 @@ interface EditorProps {
   language: string;
   onChange: (value: string | undefined) => void;
   onSave: () => void;
+  readOnly?: boolean;
 }
 
-export default function Editor({ content, language, onChange, onSave }: EditorProps) {
+export default function Editor({ content, language, onChange, onSave, readOnly = false }: EditorProps) {
   return (
     <div className="h-full w-full bg-[#1e1e1e]">
       <MonacoEditor
@@ -19,9 +20,11 @@ export default function Editor({ content, language, onChange, onSave }: EditorPr
         value={content}
         onChange={onChange}
         onMount={(editor, monaco) => {
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-            onSave();
-          });
+          if (!readOnly) {
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+              onSave();
+            });
+          }
 
           // Disable standard copy/paste behavior as much as possible
           editor.onKeyDown((e) => {
@@ -36,8 +39,9 @@ export default function Editor({ content, language, onChange, onSave }: EditorPr
           fontSize: 14,
           minimap: { enabled: false },
           automaticLayout: true,
-          contextmenu: false, // Disable right-click menu
+          contextmenu: false,
           scrollBeyondLastLine: false,
+          readOnly: readOnly,
         }}
       />
     </div>

@@ -25,4 +25,20 @@ export class FilesController {
   ) {
     return this.filesService.writeFile(projectId, body.path, body.content);
   }
+
+  @Post(':projectId/mkdir')
+  async mkdir(
+    @Param('projectId') projectId: string,
+    @Body() body: { path: string },
+  ) {
+    return this.filesService.createDirectory(projectId, body.path);
+  }
+
+  @Post(':projectId/delete')
+  async delete(
+    @Param('projectId') projectId: string,
+    @Body() body: { path: string },
+  ) {
+    return this.filesService.deleteItem(projectId, body.path);
+  }
 }
