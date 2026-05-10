@@ -58,3 +58,23 @@ Alternatively, use Nginx:
 allow 123.123.123.123;
 deny all;
 ```
+
+## 🐳 Docker Deployment (Recommended for Testing)
+
+To run the entire platform in a professional, containerized environment, use Docker Compose:
+
+1.  **Build and Start**:
+    ```bash
+    docker-compose up --build
+    ```
+
+2.  **Access the Platform**:
+    - **Frontend**: [http://localhost:3000](http://localhost:3000)
+    - **Backend API**: [http://localhost:4000](http://localhost:4000)
+
+3.  **Default Credentials**:
+    - **Admin Login**: `admin@codeserver.com` / `admin123`
+    - **Developer Login**: (Provision via Admin Panel)
+
+---
+*Note: Ensure Docker Desktop is running on your machine before starting.*

@@ -19,7 +19,9 @@ services:
     env_file:
       - ./backend/.env
     environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/codeserver?schema=public"
       PROJECTS_ROOT: "/app/projects"
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
     ports:
       - "4000:4000"
     volumes:
