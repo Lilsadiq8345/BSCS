@@ -6,13 +6,21 @@ export class DockerService implements OnModuleInit {
   private docker: Docker;
 
   onModuleInit() {
-    this.docker = new Docker({ socketPath: process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock' });
+    this.docker = new Docker({
+      socketPath: process.env.DOCKER_SOCKET_PATH || '/var/run/docker.sock',
+    });
   }
 
-  async getOrCreateContainer(projectId: string, hostPath: string, image: string = 'node:18-slim') {
+  async getOrCreateContainer(
+    projectId: string,
+    hostPath: string,
+    image: string = 'node:18-slim',
+  ): Promise<Docker.Container> {
     const containerName = `code-server-project-${projectId}`;
     const containers = await this.docker.listContainers({ all: true });
-    let container = containers.find((c) => c.Names.includes(`/${containerName}`));
+    const container = containers.find((c) =>
+      c.Names.includes(`/${containerName}`),
+    );
 
     if (!container) {
       const newContainer = await this.docker.createContainer({
@@ -39,7 +47,7 @@ export class DockerService implements OnModuleInit {
     return containerInstance;
   }
 
-  async executeCommand(containerId: string, command: string[]) {
+  async executeCommand(containerId: string, command: string[]): Promise<string> {
     const container = this.docker.getContainer(containerId);
     const exec = await container.exec({
       Cmd: command,
@@ -50,7 +58,7 @@ export class DockerService implements OnModuleInit {
     const stream = await exec.start({});
     return new Promise((resolve, reject) => {
       let output = '';
-      stream.on('data', (chunk) => {
+      stream.on('data', (chunk: Buffer) => {
         output += chunk.toString();
       });
       stream.on('end', () => resolve(output));

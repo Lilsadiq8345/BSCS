@@ -4,6 +4,42 @@ import Docker from 'dockerode';
 import * as os from 'os';
 import * as fs from 'fs/promises';
 
+export interface ContainerMetric {
+  id: string;
+  name: string;
+  cpu: string;
+  memory: number;
+  memoryLimit: number;
+}
+
+export interface SystemStats {
+  activeContainers: number;
+  containerStats: ContainerMetric[];
+  systemLoad: string;
+  memoryUsage: string;
+  storage: string;
+}
+
+interface DockerStats {
+  cpu_stats: {
+    cpu_usage: {
+      total_usage: number;
+    };
+    system_cpu_usage: number;
+    online_cpus?: number;
+  };
+  precpu_stats: {
+    cpu_usage: {
+      total_usage: number;
+    };
+    system_cpu_usage: number;
+  };
+  memory_stats: {
+    usage: number;
+    limit: number;
+  };
+}
+
 @Injectable()
 export class MonitoringService {
   private docker: Docker;
@@ -14,16 +50,16 @@ export class MonitoringService {
     });
   }
 
-  async getStats() {
-    let containers: any[] = [];
-    let stats: any[] = [];
+  async getStats(): Promise<SystemStats> {
+    let containers: Docker.ContainerInfo[] = [];
+    let stats: ContainerMetric[] = [];
     
     try {
       containers = await this.docker.listContainers();
       stats = await Promise.all(
         containers.map(async (c) => {
           const container = this.docker.getContainer(c.Id);
-          const s: any = await container.stats({ stream: false });
+          const s = await container.stats({ stream: false }) as unknown as DockerStats;
           return {
             id: c.Id,
             name: c.Names[0],
@@ -51,12 +87,12 @@ export class MonitoringService {
     try {
       if (typeof fs.statfs === 'function') {
         const statfs = await fs.statfs('/');
-        const totalSpace = statfs.blocks * statfs.bsize;
-        const freeSpace = statfs.bfree * statfs.bsize;
+        const totalSpace = Number(statfs.blocks) * Number(statfs.bsize);
+        const freeSpace = Number(statfs.bfree) * Number(statfs.bsize);
         const usedSpace = totalSpace - freeSpace;
         storageStr = `${(usedSpace / 1024 / 1024 / 1024).toFixed(1)} GB`;
       } else {
-        storageStr = 'N/A (Node < 18.15)';
+        storageStr = 'N/A';
       }
     } catch (e) {
       storageStr = 'N/A';
@@ -71,7 +107,7 @@ export class MonitoringService {
     };
   }
 
-  private calculateCpuPercent(stats: any) {
+  private calculateCpuPercent(stats: DockerStats): number {
     if (!stats?.cpu_stats?.cpu_usage || !stats?.precpu_stats?.cpu_usage) {
       return 0;
     }

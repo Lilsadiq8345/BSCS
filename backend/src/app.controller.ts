@@ -1,12 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor() {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('health')
+  checkHealth() {
+    return {
+      status: 'up',
+      timestamp: new Date().toISOString(),
+      service: 'BSCS Backend',
+      version: '2.0.0',
+    };
   }
 }
